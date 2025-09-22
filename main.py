@@ -93,47 +93,56 @@ class WeChatNotifier:
                 "temp_min_num": int(daily_data['tempMin']),  # 添加数值型温度用于判断
             }
 
-            # 生成天气提示
+            # 高温提示
+            temp_tips = []
+
+            # 首先检查昼夜温差
+            temp_diff = weather_info["temp_max_num"] - weather_info["temp_min_num"]
+            if temp_diff > 12:
+                temp_tips.append("昼夜温差大，注意及时增添衣物")
+            else:
+                # 如果没有大的温差，再检查高温和低温情况
+                if weather_info["temp_max_num"] > 30:
+                    temp_tips.append("今天高温，注意防暑降温")
+                elif weather_info["temp_max_num"] > 25:
+                    temp_tips.append("今天天气较热，建议穿轻薄衣物")
+
+                if weather_info["temp_min_num"] < 0:
+                    temp_tips.append("今天低温，注意防寒保暖")
+                elif weather_info["temp_min_num"] < 10:
+                    temp_tips.append("今天天气较冷，建议穿厚外套")
+
+            # 如果没有生成任何提示，添加默认提示
+            if not temp_tips:
+                temp_tips.append("今天温度适宜，穿着舒适")
+
+            weather_info["temp_tips"] = "；".join(temp_tips)
+
+            # 生成天气状况提示
             weather_tips = []
 
             # 降水提示
             precip_value = float(daily_data['precip'])
             if precip_value > 0:
                 if "雨" in daily_data["textDay"] or "雨" in daily_data["textNight"]:
-                    weather_tips.append("明天有雨，出门记得带伞哦")
+                    weather_tips.append("今天有雨，出门记得带伞哦")
                 elif "雪" in daily_data["textDay"] or "雪" in daily_data["textNight"]:
-                    weather_tips.append("明天有雪，出门注意防滑保暖")
+                    weather_tips.append("今天有雪，注意路面湿滑，防寒保暖")
 
             # 雾霾提示
             if "雾" in daily_data["textDay"] or "雾" in daily_data["textNight"] or "霾" in daily_data[
                 "textDay"] or "霾" in daily_data["textNight"]:
-                weather_tips.append("明天有雾霾，请戴好口罩，减少户外活动")
+                weather_tips.append("今天有雾霾，请戴好口罩，减少户外活动")
 
             # 大风提示
             if "风" in daily_data["textDay"] or "风" in daily_data["textNight"]:
-                weather_tips.append("明天有大风，请注意防风")
+                weather_tips.append("今天有大风，请注意防风")
 
-            # 高温提示
-            if weather_info["temp_max_num"] > 30:
-                weather_tips.append("明天高温，注意防暑降温")
-            elif weather_info["temp_max_num"] > 25:
-                weather_tips.append("明天天气较热，建议穿轻薄衣物")
-
-            # 低温提示
-            if weather_info["temp_min_num"] < 0:
-                weather_tips.append("明天低温，注意防寒保暖")
-            elif weather_info["temp_min_num"] < 10:
-                weather_tips.append("明天天气较冷，建议穿厚外套")
-
-            # 温差提示
-            if weather_info["temp_max_num"] - weather_info["temp_min_num"] > 10:
-                weather_tips.append("明天昼夜温差大，请注意适时增减衣物")
-
-            # 如果没有特殊提示，添加一般性提示
+            # 如果没有天气状况提示，添加一般性提示
             if not weather_tips:
-                weather_tips.append("明天天气不错，适合外出活动")
+                weather_tips.append("今天天气状况良好")
 
-            weather_info["weather_tips"] = "，".join(weather_tips)
+            weather_info["weather_tips"] = "；".join(weather_tips)
 
             return weather_info
         except Exception as e:
@@ -141,33 +150,42 @@ class WeChatNotifier:
             os.system("pause")
             sys.exit(1)
 
-    def calculate_days_difference(self, target_date_str):
-        """计算日期差"""
+    def calculate_days_difference(self, target_date_str, is_lunar=False):
+        """计算日期差，支持公历和农历"""
         today = date.today()
 
         try:
             # 处理农历日期
-            if target_date_str.startswith("农历"):
-                lunar_date_str = target_date_str[2:]  # 去掉"农历"前缀
+            if target_date_str.startswith("农历") or is_lunar:
+                if target_date_str.startswith("农历"):
+                    lunar_date_str = target_date_str[2:]  # 去掉"农历"前缀
+                else:
+                    lunar_date_str = target_date_str
+
                 parts = lunar_date_str.split('-')
                 lunar_month = int(parts[0])
                 lunar_day = int(parts[1])
-                lunar_date = ZhDate(datetime.now().year, lunar_month, lunar_day)
+
+                # 计算今年的农历日期
+                lunar_date = ZhDate(today.year, lunar_month, lunar_day)
                 target_date = lunar_date.to_datetime().date()
+
+                # 如果今年的农历日期已经过去，计算明年的
+                if today > target_date:
+                    lunar_date = ZhDate(today.year + 1, lunar_month, lunar_day)
+                    target_date = lunar_date.to_datetime().date()
             else:
                 # 解析公历日期
-                target_year = int(target_date_str.split("-")[0])
-                target_month = int(target_date_str.split("-")[1])
-                target_day = int(target_date_str.split("-")[2])
+                parts = target_date_str.split('-')
+                target_year = int(parts[0])
+                target_month = int(parts[1])
+                target_day = int(parts[2])
+
+                # 创建日期对象
                 target_date = date(target_year, target_month, target_day)
 
-            # 如果今年的节日已经过去，计算明年的
-            if today > target_date:
-                if target_date_str.startswith("农历"):
-                    # 对于农历节日，需要重新计算下一年的日期
-                    lunar_date = ZhDate(datetime.now().year + 1, lunar_month, lunar_day)
-                    target_date = lunar_date.to_datetime().date()
-                else:
+                # 如果今年的公历日期已经过去，计算明年的
+                if today > target_date:
                     target_date = date(today.year + 1, target_month, target_day)
 
             days_diff = (target_date - today).days
@@ -223,7 +241,7 @@ class WeChatNotifier:
             return {
                 "en1": "The best preparation for tomorrow is doing your best today.",
                 "en2": "",
-                "ch1": "对明天最好的准备就是今天做到最好",
+                "ch1": "对今天最好的准备就是今天做到最好",
                 "ch2": ""
             }
 
@@ -243,6 +261,7 @@ class WeChatNotifier:
         else:
             love_days_data = f"距离特殊周年纪念日还有 {love_days_diff} 天"
         day_of_year = today.timetuple().tm_yday
+
         # 计算在一起天数
         love_date_str = self.config["love_date"]
         love_year = int(love_date_str.split("-")[0])
@@ -263,7 +282,8 @@ class WeChatNotifier:
 
         birthday_data = []
         for key, value in birthdays.items():
-            days_diff = self.calculate_days_difference(value["birthday"])
+            # 假设生日是农历
+            days_diff = self.calculate_days_difference(value["birthday"], is_lunar=True)
             if days_diff == 0:
                 birthday_data.append({
                     "name": value['name'],
@@ -280,22 +300,41 @@ class WeChatNotifier:
             birthday_data.append({"name": "", "days": ""})
 
         # 处理节日数据
+        # 处理节日数据
         festival_data = []
         if "festivals" in self.config:
+            # 1. 临时存储节日信息（包含名称和剩余天数）
+            temp_festivals = []
             for festival in self.config["festivals"]:
-                days_diff = self.calculate_days_difference(festival["date"])
-                if days_diff == 0:
-                    festival_data.append({
+                # 判断是否为农历节日
+                lunar_festivals = ["春节", "元宵节", "端午节", "中秋节"]
+                is_lunar = festival["name"] in lunar_festivals
+
+                # 计算距离天数
+                days_diff = self.calculate_days_difference(festival["date"], is_lunar=is_lunar)
+                if days_diff is not None:  # 确保日期计算有效
+                    temp_festivals.append({
                         "name": festival["name"],
-                        "days": f"今天是{festival['name']}！"
+                        "days_diff": days_diff
+                    })
+
+            # 2. 按剩余天数升序排序（最近的节日排在前面）
+            temp_festivals.sort(key=lambda x: x["days_diff"])
+
+            # 3. 取排序后的前3个节日，生成显示文本
+            for fest in temp_festivals[:3]:
+                if fest["days_diff"] == 0:
+                    festival_data.append({
+                        "name": fest["name"],
+                        "days": f"今天是{fest['name']}！"
                     })
                 else:
                     festival_data.append({
-                        "name": festival["name"],
-                        "days": f"距离{festival['name']}还有 {days_diff} 天"
+                        "name": fest["name"],
+                        "days": f"距离{fest['name']}还有 {fest['days_diff']} 天"
                     })
 
-        # 确保至少有3个节日数据
+        # 确保至少有3个显示项（不足时用空值填充）
         while len(festival_data) < 3:
             festival_data.append({"name": "", "days": ""})
 
@@ -313,7 +352,8 @@ class WeChatNotifier:
                 "temp_max": {"value": weather_info["temp_max"]},
                 "temp_min": {"value": weather_info["temp_min"]},
                 "precip": {"value": weather_info["precip"]},  # 添加降水量
-                "weather_tips": {"value": weather_info["weather_tips"]},  # 添加综合天气提示
+                "temp_tips": {"value": weather_info["temp_tips"]},  # 添加温度提示
+                "weather_tips": {"value": weather_info["weather_tips"]},  # 添加天气状况提示
                 "love_day": {"value": str(love_days)},
                 "love_day_data": {"value": love_days_data},
                 "count_up_data": {"value": count_up_data},
