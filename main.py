@@ -177,7 +177,7 @@ def send_message(to_user, access_token, config, weather_data, ciba_data):
         if love_date_str:
             love_date = datetime.strptime(love_date_str, "%Y-%m-%d").date()
             love_days = (today - love_date).days  # 在一起的总天数
-            love_day_text = f"我们在一起{的第love_days}天啦"
+            love_day_text = f"我们在一起的第{love_days}天啦"
         else:
             love_day_text = ""
     except Exception as e:
@@ -283,3 +283,4 @@ if __name__ == "__main__":
         send_message(user, access_token, config, weather_data, ciba_data)
 
     os.system("pause")
+
