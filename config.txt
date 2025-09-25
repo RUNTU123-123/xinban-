@@ -1,27 +1,71 @@
-# config.txt
 {
-  "app_id": "wxce8d2379cafeeaf5",
-  "app_secret": "e4068108d67abca10cb46e32dc0c9c54",
-  "template_id": "a5g-jQSq3VrALbdOfkxykBTyx2NFSM_BZj_ko88sTDA",
-  "user": ["ouObk6teAVWOJoVVumMZD6gMOXaw"],
-  "weather_key": "489ff880d7a54efb9bda93d2c7ebc4f1",
-  "region": "新蔡",
-  "birthday1": {"name": "大宝贝", "birthday": "10-08"},
-"birthday2": {"name": "小宝贝", "birthday": "07-16"},
-"festivals": [
-  {"name": "春节", "date": "1-1"},
-  {"name": "元宵节", "date": "1-15"},
-  {"name": "清明节", "date": "2025-04-04"},
-  {"name": "劳动节", "date": "2025-05-01"},
-  {"name": "端午节", "date": "5-5"},
-  {"name": "中秋节", "date": "8-15"},
-  {"name": "国庆节", "date": "2025-10-01"},
-  {"name": "圣诞节", "date": "2025-12-25"}
-],
-  "love_date": "2022-01-01",
-  "count_up_date": "2022-01-01",
-  "note_ch1": "",
-  "note_ch2": "",
-  "note_en1": "",
-  "note_en2": ""
+    # 公众号配置
+    # 微信公众号的AppID，从微信公众平台获取
+    "app_id": "wxce8d2379cafeeaf5",
+
+    # 微信公众号的AppSecret，从微信公众平台获取（请注意保密）
+    "app_secret": "e4068108d67abca10cb46e32dc0c9c54",
+
+    # 模板消息ID，在微信公众平台创建模板后获取
+    "template_id": "vn_XyADpT8fMXisEZndziu6W4asPLahceX2Qy3ehwPM",
+
+    # 接收公众号消息的微信号，如果有多个，需要在[]里用英文逗号间隔，例如["wx1", "wx2"]
+    "user": ["ouObk6teAVWOJoVVumMZD6gMOXaw"],
+
+    # 信息配置
+    # 和风天气API的Key，用于获取天气信息，需要到和风天气官网注册并获取API Key
+    "weather_key": "489ff880d7a54efb9bda93d2c7ebc4f1",
+
+    # 查询天气的地区名称，支持省、城市、区、县等
+    "region": "新蔡",
+
+    # 纪念日配置（阳历）
+    # 用于计算在一起的天数和周年纪念日，格式：YYYY-MM-DD
+    "love_date": "2020-01-01",
+
+    # 生日配置（农历）
+    # 生日日期为农历，格式：MM-DD（农历的月-日，如农历10月8日写为"10-08"）
+    "birthday1": {"name": "大宝贝", "birthday": "10-08"},
+    "birthday2": {"name": "小宝贝", "birthday": "07-16"},
+
+    # 节日配置（数组形式）
+    # 每个节日包含"name"（节日名称）和"date"（日期）
+    # 日期格式说明：
+    #   阳历日期：MM-DD格式（如"01-01"表示1月1日）
+    #   农历日期：LMM-DD格式（如"L01-01"表示农历正月初一）
+    "festivals": [
+        # 阳历节日
+        {"name": "元旦", "date": "01-01"},
+        {"name": "情人节", "date": "02-14"},
+        {"name": "妇女节", "date": "03-08"},
+        {"name": "植树节", "date": "03-12"},
+        {"name": "劳动节", "date": "05-01"},
+        {"name": "青年节", "date": "05-04"},
+        {"name": "儿童节", "date": "06-01"},
+        {"name": "建党节", "date": "07-01"},
+        {"name": "建军节", "date": "08-01"},
+        {"name": "国庆节", "date": "10-01"},
+        {"name": "平安夜", "date": "12-24"},
+        {"name": "圣诞节", "date": "12-25"},
+
+        # 农历节日
+        {"name": "春节", "date": "L01-01"},
+        {"name": "元宵节", "date": "L01-15"},
+        {"name": "清明节", "date": "L03-05"},
+        {"name": "端午节", "date": "L05-05"},
+        {"name": "七夕节", "date": "L07-07"},
+        {"name": "中秋节", "date": "L08-15"},
+        {"name": "重阳节", "date": "L09-09"},
+        {"name": "冬至", "date": "L12-22"}
+    ],
+
+    # 每日一句配置 - 自定义每日一句内容（可选）
+    # 如果设置了自定义每日一句内容，则会显示自定义的内容
+    # 如果留空（""），系统会自动从金山词霸获取每日一句
+    # 中文
+    "note_ch1": "",
+    "note_ch2": "",
+    # 英文
+    "note_en1": "",
+    "note_en2": ""
 }
